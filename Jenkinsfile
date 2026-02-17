@@ -4,8 +4,9 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 sh '''
+                # Use the exact folder name from your GitHub: backend is at root
                 docker rmi -f backend-app || true
-                docker build -t backend-app CC_LAB-6/backend
+                docker build -t backend-app backend
                 '''
             }
         }
@@ -24,13 +25,15 @@ pipeline {
                 sh '''
                 docker rm -f nginx-lb || true
                 
+                # Start Nginx container
                 docker run -d \
                   --name nginx-lb \
                   --network app-network \
                   -p 80:80 \
                   nginx
                 
-                docker cp CC_LAB-6/nginx/default.conf nginx-lb:/etc/nginx/conf.d/default.conf
+                # Copy config from your nginx folder to the container
+                docker cp nginx/default.conf nginx-lb:/etc/nginx/conf.d/default.conf
                 docker exec nginx-lb nginx -s reload
                 '''
             }
