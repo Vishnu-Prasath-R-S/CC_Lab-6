@@ -5,7 +5,7 @@ pipeline {
             steps {
                 sh '''
                 docker rmi -f backend-app || true
-                # Fixed: Removed CC_LAB-6/ because backend is at the root
+                # Pointing directly to 'backend' because it's at your root
                 docker build -t backend-app backend
                 '''
             }
@@ -31,19 +31,11 @@ pipeline {
                   -p 80:80 \
                   nginx
                 
-                # Fixed: Removed CC_LAB-6/ because nginx is at the root
+                # Pointing to 'nginx' because it's at your root
                 docker cp nginx/default.conf nginx-lb:/etc/nginx/conf.d/default.conf
                 docker exec nginx-lb nginx -s reload
                 '''
             }
-        }
-    }
-    post {
-        success {
-            echo 'Pipeline executed successfully. NGINX load balancer is running.'
-        }
-        failure {
-            echo 'Pipeline failed. Check console logs for errors.'
         }
     }
 }
