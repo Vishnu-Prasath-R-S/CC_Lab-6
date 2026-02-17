@@ -5,6 +5,7 @@ pipeline {
             steps {
                 sh '''
                 docker rmi -f backend-app || true
+                # Root path based on your GitHub screenshot
                 docker build -t backend-app backend
                 '''
             }
@@ -24,15 +25,17 @@ pipeline {
                 sh '''
                 docker rm -f nginx-lb || true
                 
-                # Critical: wait for internal network routing to stabilize
+                # IMPORTANT: Give Docker network 10 seconds to register backends
                 sleep 10
                 
+                # Start NGINX
                 docker run -d \
                   --name nginx-lb \
                   --network app-network \
                   -p 80:80 \
                   nginx
                 
+                # Copy config and FORCE a reload to stop the 'blank/502' issues
                 docker cp nginx/default.conf nginx-lb:/etc/nginx/conf.d/default.conf
                 docker exec nginx-lb nginx -s reload
                 '''
